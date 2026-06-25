@@ -2,6 +2,11 @@
   "name": "campsnagger",
   "private": true,
   "scripts": {
-    "dev": "bash scripts/start.sh"
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "bash scripts/start-api.sh",
+    "dev:web": "npm run dev --prefix web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

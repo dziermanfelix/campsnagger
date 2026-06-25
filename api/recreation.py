@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import requests
 
 BASE_URL = "https://www.recreation.gov/api/camps/availability/campground"
+CAMPSITE_URL = "https://www.recreation.gov/camping/campsites/{campsite_id}"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -18,14 +19,12 @@ class SiteAvailability:
     loop: str
     campsite_type: str
     has_availability: bool
-    icon: str
     available_dates: list[str]
+    site_url: str
 
 
 class RecreationGovError(Exception):
-    def __init__(self, message: str, status_code: int | None = None):
-        super().__init__(message)
-        self.status_code = status_code
+    pass
 
 
 def normalize_start_date(start_date: str) -> str:
@@ -37,7 +36,7 @@ def normalize_start_date(start_date: str) -> str:
 def fetch_campground_availability(campground_id: str, start_date: str) -> dict:
     url = f"{BASE_URL}/{campground_id}/month"
     params = {"start_date": normalize_start_date(start_date)}
-    headers = {**HEADERS, "Referer": f"https://recreation.gov{campground_id}"}
+    headers = {**HEADERS, "Referer": f"https://www.recreation.gov/camping/campgrounds/{campground_id}"}
 
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
@@ -47,7 +46,6 @@ def fetch_campground_availability(campground_id: str, start_date: str) -> dict:
     if response.status_code != 200:
         raise RecreationGovError(
             f"recreation.gov returned status {response.status_code}",
-            status_code=response.status_code,
         )
 
     return response.json()
@@ -73,8 +71,8 @@ def parse_sites(raw_data: dict) -> list[SiteAvailability]:
                 loop=site_details.get("loop", ""),
                 campsite_type=site_details.get("campsite_type", ""),
                 has_availability=has_availability,
-                icon="🍻" if has_availability else "💩",
                 available_dates=available_dates,
+                site_url=CAMPSITE_URL.format(campsite_id=site_id),
             )
         )
 

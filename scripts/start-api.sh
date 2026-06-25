@@ -9,10 +9,10 @@ if [ ! -d .venv ]; then
 fi
 
 source .venv/bin/activate
-pip install -q -r requirements.txt
+pip install -q -r api/requirements.txt
 
-exec uvicorn backend.main:app \
+exec uvicorn main:app \
   --reload \
   --host 127.0.0.1 \
   --port 8000 \
-  --app-dir src
+  --app-dir api
