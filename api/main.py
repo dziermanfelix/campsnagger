@@ -49,16 +49,14 @@ def get_campground_availability(
         raise HTTPException(status_code=404, detail=f"Unknown campground: {slug}")
 
     try:
-        raw_data = fetch_campground_availability(campground["id"], start_date)
+        raw = fetch_campground_availability(campground["id"], start_date)
     except RecreationGovError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
-
-    sites = parse_sites(raw_data)
 
     return AvailabilityResponse(
         campground_id=campground["id"],
         campground_slug=slug,
         campground_name=campground["name"],
         start_date=start_date.split("T")[0],
-        sites=[SiteResponse(**site.__dict__) for site in sites],
+        sites=[SiteResponse(**s.__dict__) for s in parse_sites(raw)],
     )

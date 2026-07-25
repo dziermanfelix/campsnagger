@@ -4,11 +4,13 @@ import requests
 
 BASE_URL = "https://www.recreation.gov/api/camps/availability/campground"
 CAMPSITE_URL = "https://www.recreation.gov/camping/campsites/{campsite_id}"
-
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json",
 }
 
 
@@ -36,7 +38,10 @@ def normalize_start_date(start_date: str) -> str:
 def fetch_campground_availability(campground_id: str, start_date: str) -> dict:
     url = f"{BASE_URL}/{campground_id}/month"
     params = {"start_date": normalize_start_date(start_date)}
-    headers = {**HEADERS, "Referer": f"https://www.recreation.gov/camping/campgrounds/{campground_id}"}
+    headers = {
+        **HEADERS,
+        "Referer": f"https://www.recreation.gov/camping/campgrounds/{campground_id}",
+    }
 
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
@@ -44,33 +49,27 @@ def fetch_campground_availability(campground_id: str, start_date: str) -> dict:
         raise RecreationGovError(f"Failed to reach recreation.gov: {e}") from e
 
     if response.status_code != 200:
-        raise RecreationGovError(
-            f"recreation.gov returned status {response.status_code}",
-        )
+        raise RecreationGovError(f"recreation.gov returned status {response.status_code}")
 
     return response.json()
 
 
 def parse_sites(raw_data: dict) -> list[SiteAvailability]:
-    campsites = raw_data.get("campsites", {})
     sites: list[SiteAvailability] = []
 
-    for site_id, site_details in campsites.items():
-        availabilities = site_details.get("availabilities", {})
+    for site_id, details in raw_data.get("campsites", {}).items():
         available_dates = sorted(
-            date_str.split("T")[0]
-            for date_str, status in availabilities.items()
+            date.split("T")[0]
+            for date, status in details.get("availabilities", {}).items()
             if status == "Available"
         )
-        has_availability = len(available_dates) > 0
-
         sites.append(
             SiteAvailability(
                 campsite_id=site_id,
-                site_number=site_details.get("site", ""),
-                loop=site_details.get("loop", ""),
-                campsite_type=site_details.get("campsite_type", ""),
-                has_availability=has_availability,
+                site_number=details.get("site", ""),
+                loop=details.get("loop", ""),
+                campsite_type=details.get("campsite_type", ""),
+                has_availability=bool(available_dates),
                 available_dates=available_dates,
                 site_url=CAMPSITE_URL.format(campsite_id=site_id),
             )

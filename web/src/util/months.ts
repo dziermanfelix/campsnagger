@@ -18,8 +18,7 @@ function monthLabel(year: number, month: number) {
 }
 
 function seasonYear(now = new Date()) {
-  const month = now.getMonth() + 1;
-  return month > SEASON_END ? now.getFullYear() + 1 : now.getFullYear();
+  return now.getMonth() + 1 > SEASON_END ? now.getFullYear() + 1 : now.getFullYear();
 }
 
 export function getCampingMonths(now = new Date()): MonthOption[] {
@@ -29,22 +28,17 @@ export function getCampingMonths(now = new Date()): MonthOption[] {
 
   return Array.from({ length: SEASON_END - SEASON_START + 1 }, (_, i) => {
     const month = SEASON_START + i;
-    return {
-      value: monthValue(year, month),
-      label: monthLabel(year, month),
-    };
+    return { value: monthValue(year, month), label: monthLabel(year, month) };
   }).filter(({ value }) => {
-    const [optionYear, optionMonth] = value.split('-').map(Number);
-    return optionYear > currentYear || (optionYear === currentYear && optionMonth >= currentMonth);
+    const [y, m] = value.split('-').map(Number);
+    return y > currentYear || (y === currentYear && m >= currentMonth);
   });
 }
 
 export function defaultCampingMonth(now = new Date()) {
   const year = seasonYear(now);
   const month = now.getMonth() + 1;
-
-  if (month < SEASON_START) return monthValue(year, SEASON_START);
-  if (month > SEASON_END) return monthValue(year, SEASON_START);
+  if (month < SEASON_START || month > SEASON_END) return monthValue(year, SEASON_START);
   return monthValue(year, month);
 }
 
