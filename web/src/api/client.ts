@@ -22,23 +22,6 @@ export type AvailabilityResponse = {
   sites: Site[]
 }
 
-export type ScanResult = {
-  campground_slug: string
-  campground_name: string
-  start_date: string
-  sites_found: number
-  available_sites: number
-  success: boolean
-  error: string | null
-}
-
-export type ScanResponse = {
-  total_scans: number
-  successful_scans: number
-  failed_scans: number
-  results: ScanResult[]
-}
-
 async function parseError(res: Response): Promise<never> {
   const body = await res.json().catch(() => null)
   throw new Error(body?.detail ?? `Request failed (${res.status})`)
@@ -56,12 +39,6 @@ export async function getCampgroundAvailability(
 ): Promise<AvailabilityResponse> {
   const params = new URLSearchParams({ start_date: startDate })
   const res = await fetch(`/api/campgrounds/${slug}/availability?${params}`)
-  if (!res.ok) await parseError(res)
-  return res.json()
-}
-
-export async function scanAllCampgrounds(): Promise<ScanResponse> {
-  const res = await fetch('/api/scan', { method: 'POST' })
   if (!res.ok) await parseError(res)
   return res.json()
 }
