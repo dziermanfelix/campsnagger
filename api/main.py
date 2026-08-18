@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
@@ -31,6 +33,44 @@ class AvailabilityResponse(BaseModel):
     sites: list[SiteResponse]
 
 
+class ScanResult(BaseModel):
+    campground_slug: str
+    campground_name: str
+    start_date: str
+    sites_found: int
+    available_sites: int
+    success: bool
+    error: str | None = None
+
+
+class ScanResponse(BaseModel):
+    total_scans: int
+    successful_scans: int
+    failed_scans: int
+    results: list[ScanResult]
+
+
+SEASON_START = 5
+SEASON_END = 9
+
+
+def get_camping_season_months(now: datetime | None = None) -> list[str]:
+    if now is None:
+        now = datetime.now()
+    
+    current_year = now.year
+    current_month = now.month
+    
+    season_year = current_year + 1 if current_month > SEASON_END else current_year
+    
+    months = []
+    for month in range(SEASON_START, SEASON_END + 1):
+        if season_year > current_year or (season_year == current_year and month >= current_month):
+            months.append(f"{season_year}-{month:02d}-01")
+    
+    return months
+
+
 @app.get("/campgrounds", response_model=list[CampgroundResponse])
 def list_campgrounds():
     return [
@@ -59,4 +99,50 @@ def get_campground_availability(
         campground_name=campground["name"],
         start_date=start_date.split("T")[0],
         sites=[SiteResponse(**s.__dict__) for s in parse_sites(raw)],
+    )
+
+
+@app.post("/scan", response_model=ScanResponse)
+def scan_all_campgrounds():
+    months = get_camping_season_months()
+    results = []
+    
+    for slug, campground in CAMPGROUNDS.items():
+        for start_date in months:
+            try:
+                raw = fetch_campground_availability(campground["id"], start_date)
+                sites = parse_sites(raw)
+                available_sites = sum(1 for site in sites if site.has_availability)
+                
+                results.append(
+                    ScanResult(
+                        campground_slug=slug,
+                        campground_name=campground["name"],
+                        start_date=start_date,
+                        sites_found=len(sites),
+                        available_sites=available_sites,
+                        success=True,
+                    )
+                )
+            except RecreationGovError as e:
+                results.append(
+                    ScanResult(
+                        campground_slug=slug,
+                        campground_name=campground["name"],
+                        start_date=start_date,
+                        sites_found=0,
+                        available_sites=0,
+                        success=False,
+                        error=str(e),
+                    )
+                )
+    
+    successful_scans = sum(1 for r in results if r.success)
+    failed_scans = len(results) - successful_scans
+    
+    return ScanResponse(
+        total_scans=len(results),
+        successful_scans=successful_scans,
+        failed_scans=failed_scans,
+        results=results,
     )
