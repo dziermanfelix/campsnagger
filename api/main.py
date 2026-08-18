@@ -61,12 +61,10 @@ def get_camping_season_months(now: datetime | None = None) -> list[str]:
     current_year = now.year
     current_month = now.month
     
-    season_year = current_year + 1 if current_month > SEASON_END else current_year
-    
     months = []
     for month in range(SEASON_START, SEASON_END + 1):
-        if season_year > current_year or (season_year == current_year and month >= current_month):
-            months.append(f"{season_year}-{month:02d}-01")
+        if month >= current_month:
+            months.append(f"{current_year}-{month:02d}-01")
     
     return months
 
