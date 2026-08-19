@@ -123,7 +123,7 @@ export default function HomePage() {
         ) : (
           data && (
             <SiteList
-              title='Summary'
+              title='Openings'
               subtitle={`${available.length} of ${data.sites.length} sites available · ${formatMonthLabel(data.start_date)}`}
               sites={available}
               empty='No openings found for this month.'
@@ -147,37 +147,35 @@ function SiteList({
   empty?: string;
 }) {
   return (
-    <div className='mt-6 flex min-h-0 flex-1 flex-col overflow-hidden'>
-      <h2 className='mb-3 shrink-0 text-sm font-medium uppercase tracking-widest text-stone-400'>{title}</h2>
-      <div className='min-h-0 flex-1 overflow-hidden'>
-        <div className='flex max-h-full flex-col overflow-hidden rounded-xl border border-stone-800 bg-stone-900/60'>
-          {subtitle && (
-            <div className='shrink-0 border-b border-stone-800 px-4 py-3'>
-              <p className='text-sm text-stone-300'>{subtitle}</p>
-            </div>
-          )}
-          <div className='overflow-y-auto px-4 py-3'>
-            {sites.length === 0 ? (
-              <p className='text-sm text-stone-500'>{empty}</p>
-            ) : (
-              <ul className='space-y-2'>
-                {sites.map((site) => (
-                  <li key={site.campsite_id} className='flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm'>
-                    <a
-                      href={site.site_url}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='font-medium text-emerald-300 hover:text-emerald-200 hover:underline'
-                    >
-                      Site #{site.site_number}
-                    </a>
-                    <span className='text-stone-500'>{site.loop}</span>
-                    <span className='text-stone-400'>{formatAvailableDays(site.available_dates)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+    <div className='mt-6'>
+      <h2 className='mb-3 text-sm font-medium uppercase tracking-widest text-stone-400'>{title}</h2>
+      <div className='overflow-hidden rounded-xl border border-stone-800 bg-stone-900/60'>
+        {subtitle && (
+          <div className='border-b border-stone-800 px-4 py-3'>
+            <p className='text-sm text-stone-300'>{subtitle}</p>
           </div>
+        )}
+        <div className='max-h-[calc(1.5rem+10*1.25rem+9*0.5rem)] overflow-y-auto px-4 py-3'>
+          {sites.length === 0 ? (
+            <p className='text-sm text-stone-500'>{empty}</p>
+          ) : (
+            <ul className='space-y-2'>
+              {sites.map((site) => (
+                <li key={site.campsite_id} className='flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm leading-5'>
+                  <a
+                    href={site.site_url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='font-medium text-emerald-300 hover:text-emerald-200 hover:underline'
+                  >
+                    Site #{site.site_number}
+                  </a>
+                  <span className='text-stone-500'>{site.loop}</span>
+                  <span className='text-stone-400'>{formatAvailableDays(site.available_dates)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
