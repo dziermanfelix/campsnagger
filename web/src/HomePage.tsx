@@ -50,7 +50,10 @@ export default function HomePage() {
       <div className='mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden px-4 py-6'>
         <header className='mb-6 shrink-0'>
           <div className='flex flex-wrap items-center justify-between gap-3'>
-            <p className='text-sm font-medium uppercase tracking-widest text-emerald-400'>Campsnagger</p>
+            <a href='/' className='flex items-center gap-3 text-emerald-400 transition hover:text-emerald-300'>
+              <img src='/logo.png' alt='Campsnagger' className='h-14 w-14' />
+              <span className='text-sm font-medium uppercase tracking-widest'>Campsnagger</span>
+            </a>
             <div className='flex items-center gap-3'>
               <p className='max-w-56 text-right text-xs text-stone-500 sm:max-w-none'>
                 Log in to Recreation.gov for faster checkout
