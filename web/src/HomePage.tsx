@@ -7,7 +7,7 @@ import {
   type Campground,
   type Site,
 } from './api/client';
-import { defaultCampingMonth, formatMonthLabel, getCampingMonths } from './util/months';
+import { defaultCampingMonth, formatAvailableDays, formatMonthLabel, getCampingMonths } from './util/months';
 
 const campingMonths = getCampingMonths();
 const rowGrid =
@@ -67,9 +67,7 @@ export default function HomePage() {
           <h1 className='mt-2 text-4xl font-semibold tracking-tight text-white'>
             {data?.campground_name ?? selected?.name ?? 'Campground'} availability
           </h1>
-          <p className='mt-3 max-w-xl text-stone-400'>
-            Check Yosemite openings, then open a site in this browser.
-          </p>
+          <p className='mt-3 max-w-xl text-stone-400'>Check Yosemite openings, then open a site in this browser.</p>
         </header>
 
         {error && (
@@ -186,7 +184,7 @@ function SiteList({
                       Site #{site.site_number}
                     </a>
                     <span className='text-stone-500'>{site.loop}</span>
-                    <span className='text-stone-400'>{site.available_dates.join(', ')}</span>
+                    <span className='text-stone-400'>{formatAvailableDays(site.available_dates)}</span>
                   </li>
                 ))}
               </ul>
@@ -229,12 +227,10 @@ function SiteList({
                   </span>
                   <span
                     className={
-                      site.has_availability
-                        ? 'hidden truncate text-stone-400 sm:block'
-                        : 'hidden truncate text-stone-600 sm:block'
+                      site.has_availability ? 'hidden text-stone-400 sm:block' : 'hidden text-stone-600 sm:block'
                     }
                   >
-                    {site.has_availability ? site.available_dates.join(', ') : '—'}
+                    {site.has_availability ? formatAvailableDays(site.available_dates) : '—'}
                   </span>
                 </li>
               ))}

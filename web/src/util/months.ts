@@ -46,3 +46,12 @@ export function formatMonthLabel(startDate: string) {
   const [year, month] = startDate.split('-').map(Number);
   return monthLabel(year, month);
 }
+
+export function formatAvailableDays(dates: string[]): string {
+  return dates
+    .map((date) => {
+      const [, month, day] = date.split('-').map(Number);
+      return `${month}/${day}`;
+    })
+    .join('; ');
+}
