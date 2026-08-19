@@ -7,6 +7,7 @@ import {
   type Campground,
   type Site,
 } from './api/client';
+import Spinner from './components/Spinner';
 import { defaultCampingMonth, formatAvailableDays, formatMonthLabel, getCampingMonths } from './util/months';
 
 const campingMonths = getCampingMonths();
@@ -19,20 +20,14 @@ export default function HomePage() {
   const [campgroundSlug, setCampgroundSlug] = useState('upper-pines');
   const [startDate, setStartDate] = useState(defaultCampingMonth);
   const [data, setData] = useState<AvailabilityResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    getCampgrounds()
-      .then(setCampgrounds)
-      .catch(() => setError('Failed to load campgrounds'));
-  }, []);
-
-  async function fetchAvailability() {
+  async function fetchAvailability(slug = campgroundSlug, date = startDate) {
     setLoading(true);
     setError(null);
     try {
-      setData(await getCampgroundAvailability(campgroundSlug, startDate));
+      setData(await getCampgroundAvailability(slug, date));
     } catch (e) {
       setData(null);
       setError(e instanceof Error ? e.message : 'Something went wrong');
@@ -40,6 +35,14 @@ export default function HomePage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    getCampgrounds()
+      .then(setCampgrounds)
+      .catch(() => setError('Failed to load campgrounds'));
+    fetchAvailability();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selected = campgrounds.find((c) => c.slug === campgroundSlug);
   const available = data?.sites.filter((s) => s.has_availability) ?? [];
@@ -82,8 +85,9 @@ export default function HomePage() {
             <select
               value={campgroundSlug}
               onChange={(e) => {
-                setCampgroundSlug(e.target.value);
-                setData(null);
+                const slug = e.target.value;
+                setCampgroundSlug(slug);
+                fetchAvailability(slug, startDate);
               }}
               className='rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100'
             >
@@ -99,8 +103,9 @@ export default function HomePage() {
             <select
               value={startDate}
               onChange={(e) => {
-                setStartDate(e.target.value);
-                setData(null);
+                const date = e.target.value;
+                setStartDate(date);
+                fetchAvailability(campgroundSlug, date);
               }}
               className='rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100'
             >
@@ -111,27 +116,25 @@ export default function HomePage() {
               ))}
             </select>
           </label>
-          <button
-            type='button'
-            onClick={fetchAvailability}
-            disabled={loading || campgrounds.length === 0}
-            className='rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60'
-          >
-            {loading ? 'Checking…' : 'Check availability'}
-          </button>
         </div>
 
-        {data && (
-          <section className='mt-6 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
-            <SiteList
-              title='Summary'
-              subtitle={`${available.length} of ${data.sites.length} sites available · ${formatMonthLabel(data.start_date)}`}
-              sites={available}
-              empty='No openings found for this month.'
-              summary
-            />
-            <SiteList title={`All sites (${data.sites.length})`} sites={data.sites} />
-          </section>
+        {loading ? (
+          <div className='mt-6 flex min-h-0 flex-1 items-center justify-center'>
+            <Spinner />
+          </div>
+        ) : (
+          data && (
+            <section className='mt-6 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+              <SiteList
+                title='Summary'
+                subtitle={`${available.length} of ${data.sites.length} sites available · ${formatMonthLabel(data.start_date)}`}
+                sites={available}
+                empty='No openings found for this month.'
+                summary
+              />
+              <SiteList title={`All sites (${data.sites.length})`} sites={data.sites} />
+            </section>
+          )
         )}
       </div>
     </div>
