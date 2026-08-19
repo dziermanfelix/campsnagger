@@ -57,15 +57,15 @@ SEASON_END = 9
 def get_camping_season_months(now: datetime | None = None) -> list[str]:
     if now is None:
         now = datetime.now()
-    
+
     current_year = now.year
     current_month = now.month
-    
+
     months = []
     for month in range(SEASON_START, SEASON_END + 1):
         if month >= current_month:
             months.append(f"{current_year}-{month:02d}-01")
-    
+
     return months
 
 
@@ -104,14 +104,14 @@ def get_campground_availability(
 def scan_all_campgrounds():
     months = get_camping_season_months()
     results = []
-    
+
     for slug, campground in CAMPGROUNDS.items():
         for start_date in months:
             try:
                 raw = fetch_campground_availability(campground["id"], start_date)
                 sites = parse_sites(raw)
                 available_sites = sum(1 for site in sites if site.has_availability)
-                
+
                 results.append(
                     ScanResult(
                         campground_slug=slug,
@@ -134,10 +134,10 @@ def scan_all_campgrounds():
                         error=str(e),
                     )
                 )
-    
+
     successful_scans = sum(1 for r in results if r.success)
     failed_scans = len(results) - successful_scans
-    
+
     return ScanResponse(
         total_scans=len(results),
         successful_scans=successful_scans,

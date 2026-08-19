@@ -12,6 +12,7 @@ import { defaultCampingMonth, formatMonthLabel, getCampingMonths } from './util/
 const campingMonths = getCampingMonths();
 const rowGrid =
   'grid grid-cols-[1.5rem_3.5rem_5rem_1fr_5.5rem] gap-3 border-b border-stone-800/60 px-3 py-2 text-sm last:border-b-0 sm:grid-cols-[1.5rem_3.5rem_5rem_1fr_5.5rem_1fr]';
+const REC_GOV_LOGIN = 'https://www.recreation.gov/log-in';
 
 export default function HomePage() {
   const [campgrounds, setCampgrounds] = useState<Campground[]>([]);
@@ -47,12 +48,35 @@ export default function HomePage() {
     <div className='flex h-screen flex-col overflow-hidden bg-stone-950 text-stone-100'>
       <div className='mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden px-4 py-6'>
         <header className='mb-6 shrink-0'>
-          <p className='text-sm font-medium uppercase tracking-widest text-emerald-400'>Campsnagger</p>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <p className='text-sm font-medium uppercase tracking-widest text-emerald-400'>Campsnagger</p>
+            <div className='flex items-center gap-3'>
+              <p className='max-w-56 text-right text-xs text-stone-500 sm:max-w-none'>
+                Log in to Recreation.gov for faster checkout
+              </p>
+              <a
+                href={REC_GOV_LOGIN}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='shrink-0 rounded-lg border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-200 transition hover:border-stone-400 hover:text-white'
+              >
+                Log in
+              </a>
+            </div>
+          </div>
           <h1 className='mt-2 text-4xl font-semibold tracking-tight text-white'>
             {data?.campground_name ?? selected?.name ?? 'Campground'} availability
           </h1>
-          <p className='mt-3 max-w-xl text-stone-400'>Check Yosemite campsite openings via recreation.gov.</p>
+          <p className='mt-3 max-w-xl text-stone-400'>
+            Check Yosemite openings, then open a site in this browser.
+          </p>
         </header>
+
+        {error && (
+          <p className='mb-4 shrink-0 rounded-lg border border-red-900/60 bg-red-950/40 px-4 py-3 text-red-300'>
+            {error}
+          </p>
+        )}
 
         <div className='flex shrink-0 flex-wrap items-end gap-3 rounded-xl border border-stone-800 bg-stone-900/60 p-4'>
           <label className='flex flex-col gap-1 text-sm text-stone-400'>
@@ -98,12 +122,6 @@ export default function HomePage() {
             {loading ? 'Checking…' : 'Check availability'}
           </button>
         </div>
-
-        {error && (
-          <p className='mt-4 shrink-0 rounded-lg border border-red-900/60 bg-red-950/40 px-4 py-3 text-red-300'>
-            {error}
-          </p>
-        )}
 
         {data && (
           <section className='mt-6 flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
