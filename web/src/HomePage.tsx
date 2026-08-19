@@ -12,6 +12,19 @@ import { defaultCampingMonth, formatAvailableDays, formatMonthLabel, getCampingM
 
 const campingMonths = getCampingMonths();
 const REC_GOV_LOGIN = 'https://www.recreation.gov/log-in';
+const REC_GOV_SCRIPT = '/recreation-gov-cart-poc.user.js';
+
+function buildCartPocUrl(site: Site) {
+  const intent = {
+    campsiteId: site.campsite_id,
+    siteNumber: site.site_number,
+    availableDates: site.available_dates,
+  };
+  const hash = new URLSearchParams({
+    campsnagger_cart_poc: btoa(JSON.stringify(intent)),
+  });
+  return `${site.site_url}#${hash.toString()}`;
+}
 
 export default function HomePage() {
   const [campgrounds, setCampgrounds] = useState<Campground[]>([]);
@@ -71,7 +84,17 @@ export default function HomePage() {
           <h1 className='mt-2 text-4xl font-semibold tracking-tight text-white'>
             {data?.campground_name ?? selected?.name ?? 'Campground'} availability
           </h1>
-          <p className='mt-3 max-w-xl text-stone-400'>Check Yosemite openings, then open a site in this browser.</p>
+          <p className='mt-3 max-w-xl text-stone-400'>
+            Check Yosemite openings, then open a site in this browser to try the Recreation.gov cart POC.
+          </p>
+          <p className='mt-2 max-w-2xl text-sm text-stone-500'>
+            Install the{' '}
+            <a href={REC_GOV_SCRIPT} className='text-emerald-300 underline hover:text-emerald-200'>
+              Recreation.gov cart helper userscript
+            </a>{' '}
+            first. After that, clicking a site opens Recreation.gov in a new tab and the script attempts to select all
+            available dates for that site and add it to your cart.
+          </p>
         </header>
 
         {error && (
@@ -166,7 +189,7 @@ function SiteList({
               {sites.map((site) => (
                 <li key={site.campsite_id} className='flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm leading-5'>
                   <a
-                    href={site.site_url}
+                    href={buildCartPocUrl(site)}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='font-medium text-emerald-300 hover:text-emerald-200 hover:underline'
